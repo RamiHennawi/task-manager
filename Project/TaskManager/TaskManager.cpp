@@ -150,6 +150,22 @@ void TaskManager::deleteTask(uint32_t id) {
 	}
 
 	logged_in_user->deleteTask(id);
+
+	// delete from tasks vector
+	size_t tasks_count = tasks.getSize();
+	for (size_t i = 0; i < tasks_count; i++) {
+		if (tasks[i].getID() == id) {
+			tasks.popAt(i);
+		}
+	}
+
+	// delete from collaborations
+	size_t collabs_count = collaborations.getSize();
+	for (size_t i = 0; i < collabs_count; i++) {
+		try {
+			collaborations[i].removeTask(id);
+		} catch (...) {}
+	}
 }
 
 void TaskManager::getTask(uint32_t id) const {

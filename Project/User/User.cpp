@@ -80,6 +80,12 @@ void User::deleteTask(uint32_t id) {
 	for (size_t i = 0; i < tasks_count; i++) {
 		if (tasks[i]->getID() == id) {
 			tasks.popAt(i);
+
+			// delete from dashboard (if it is there)
+			try {
+				dashboard.removeTask(id);
+			} catch(...) {}
+
 			return;
 		}
 	}

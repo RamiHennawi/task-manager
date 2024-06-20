@@ -29,6 +29,8 @@ public:
 	size_t getTasksCount() const;
 	const CollaborationTask& getTaskAtIndex(size_t index) const;
 
+	void removeTask(uint32_t id);
+
 	bool includesUser(const MyString& username) const;
 	bool includesUser(const User& user) const;
 };
