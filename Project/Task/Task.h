@@ -14,7 +14,7 @@ namespace TaskHelperFunctions {
 }
 
 class Task {
-private:
+protected:
 	uint32_t id; // to be handled by TaskManager (unique id = created tasks count)
 	TaskStatus status;
 	time_t due_date;
@@ -24,6 +24,7 @@ private:
 	const char* getStatusString() const;
 
 public:
+	Task() = default;
 	Task(uint32_t id, const MyString& name, const MyString& due_date_str, const MyString& description);
 
 	uint32_t getID() const;

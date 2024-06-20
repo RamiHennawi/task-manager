@@ -96,7 +96,7 @@ const Task& User::getTask(const MyString& name) const {
 		}
 	}
 
-	throw std::runtime_error("No task with that ID found.");
+	throw std::runtime_error("No task with that name found.");
 }
 
 const Task& User::getTask(uint32_t id) const {
@@ -160,4 +160,21 @@ void User::listCompletedTasks() const {
 	if (!exists_task) {
 		std::cout << "There are no completed tasks.";
 	}
+}
+
+void User::addTaskToDashboard(uint32_t id) {
+	Task task = getTask(id);
+
+	try {
+		dashboard.addTask(task);
+		std::cout << "Task added successfully!" << std::endl;
+	}
+	catch (const std::runtime_error& e) {
+		// maybe handle it on a higher level??
+		std::cout << e.what() << std::endl;
+	}
+}
+
+void User::listDashboard() const {
+	dashboard.listTasks();
 }

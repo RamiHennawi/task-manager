@@ -1,13 +1,14 @@
 #include "Task.h"
 #include <sstream>
 #include <iomanip>
+#pragma warning(disable : 4996)
 
 namespace TaskHelperFunctions {
 	time_t convertDateString(const MyString& date_str) {
-		struct tm tm_struct;
+		std::tm tm_struct = { 0 };
 
-		std::istringstream ss(date_str);
-		ss >> std::get_time(&tm_struct, "%Y-%m-&d");
+		std::istringstream ss(date_str.c_str());
+		ss >> std::get_time(&tm_struct, "%Y-%m-%d");
 
 		if (ss.fail()) {
 			throw std::invalid_argument("Invalid date format (must be yyyy-mm-dd).");
@@ -71,6 +72,6 @@ void Task::print() const {
 	std::cout << "Task ID: " << id << std::endl;
 	std::cout << "Task name: " << name << std::endl;
 	std::cout << "Task description: " << description << std::endl;
-	std::cout << "Due date: " << ctime(&due_date) << std::endl;
+	std::cout << "Due date: " << ctime(&due_date);
 	std::cout << "Status: " << getStatusString() << std::endl;
 }

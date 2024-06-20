@@ -1,6 +1,7 @@
 #pragma once
 #include "MyString.h"
 #include "Task.h"
+#include "Dashboard.h"
 #include "Vector.hpp"
 
 class User {
@@ -8,8 +9,10 @@ private:
 	MyString username;
 	MyString password;
 	Vector<Task*> tasks;
+	Dashboard dashboard;
 
 public:
+	User() = default;
 	User(const MyString& username, const MyString& password);
 
 	const MyString& getUsername() const;
@@ -30,4 +33,7 @@ public:
 	void listTasks(const MyString& final_date_str) const;
 	void listTasks() const;
 	void listCompletedTasks() const;
+
+	void addTaskToDashboard(uint32_t id);
+	void listDashboard() const;
 };
