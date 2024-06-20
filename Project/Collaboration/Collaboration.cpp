@@ -14,9 +14,9 @@ void Collaboration::addUser(User& new_user) {
 	users.pushBack(&new_user);
 }
 
-void Collaboration::assignTask(Task& task, User& user) {
-	if (includesUser(user)) {
-		tasks.pushBack(Pair<Task*, User*>(&task, &user));
+void Collaboration::assignTask(CollaborationTask& task) {
+	if (includesUser(task.getAssignee())) {
+		tasks.pushBack(&task);
 	}
 	else {
 		throw std::runtime_error("User is not in the collaboration.");
@@ -31,8 +31,8 @@ void Collaboration::listTasks() const {
 	}
 
 	for (size_t i = 0; i < tasksCount; i++) {
-		tasks[i].getFirst()->print();
-		std::cout << "Assignee: " << tasks[i].getSecond()->getUsername() << std::endl;
+		tasks[i]->print();
+		std::cout << "Assignee: " << tasks[i]->getAssignee().getUsername() << std::endl;
 		std::cout << "-----------------" << std::endl;
 	}
 }
@@ -49,8 +49,8 @@ size_t Collaboration::getTasksCount() const {
 	return tasks.getSize();
 }
 
-const Task& Collaboration::getTaskAtIndex(size_t index) const {
-	return *(tasks[index].getFirst());
+const CollaborationTask& Collaboration::getTaskAtIndex(size_t index) const {
+	return *tasks[index];
 }
 
 bool Collaboration::includesUser(const MyString& username) const {

@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include "MyString.h"
-#include "Task.h"
+#include "CollaborationTask.h"
 #include "User.h"
 #include "Vector.hpp"
 #include "Pair.hpp"
@@ -12,21 +12,22 @@ private:
 	MyString name;
 	MyString creator;
 	Vector<User*> users;
-	Vector<Pair<Task*, User*>> tasks;
+	Vector<CollaborationTask*> tasks;
 
 public:
+	Collaboration() = default;
 	Collaboration(uint32_t id, const MyString& name, const MyString& creator);
 
 	void addUser(User& new_user);
 
-	void assignTask(Task& task, User& user);
+	void assignTask(CollaborationTask& task);
 	void listTasks() const;
 
 	const MyString& getName() const;
 	const MyString& getCreator() const;
 
 	size_t getTasksCount() const;
-	const Task& getTaskAtIndex(size_t index) const;
+	const CollaborationTask& getTaskAtIndex(size_t index) const;
 
 	bool includesUser(const MyString& username) const;
 	bool includesUser(const User& user) const;
