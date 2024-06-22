@@ -105,7 +105,7 @@ void User::deleteTask(uint32_t id) {
 
 			// delete from dashboard (if it is there)
 			try {
-				dashboard.removeTask(id);
+				dashboard.removeTask(*tasks[i]);
 			} catch(...) {}
 
 			return;
@@ -155,7 +155,7 @@ void User::listTasks(const MyString& final_date_str) const {
 	}
 
 	if (!exists_task) {
-		std::cout << "There are no tasks before that date.";
+		throw std::runtime_error("There are no tasks before that date.");
 	}
 }
 
@@ -163,7 +163,7 @@ void User::listTasks() const {
 	size_t tasks_count = tasks.getSize();
 
 	if (tasks_count == 0) {
-		std::cout << "There are no tasks.";
+		throw std::runtime_error("There are no tasks before that date.");
 	}
 
 	for (size_t i = 0; i < tasks_count; i++) {
@@ -186,14 +186,28 @@ void User::listCompletedTasks() const {
 	}
 
 	if (!exists_task) {
-		std::cout << "There are no completed tasks.";
+		throw std::runtime_error("There are no completed tasks.");
+	}
+}
+
+void User::removeTaskFromDashboard(uint32_t id) {
+	size_t tasks_count = tasks.getSize();
+
+	for (size_t i = 0; i < tasks_count; i++) {
+		if (tasks[i]->getID() == id) {
+			dashboard.removeTask(*tasks[i]);
+		}
 	}
 }
 
 void User::addTaskToDashboard(uint32_t id) {
-	Task task = getTask(id);
+	size_t tasks_count = tasks.getSize();
 
-	dashboard.addTask(task);
+	for (size_t i = 0; i < tasks_count; i++) {
+		if (tasks[i]->getID() == id) {
+			dashboard.addTask(*tasks[i]);
+		}
+	}
 }
 
 void User::listDashboard() const {

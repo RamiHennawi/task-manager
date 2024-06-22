@@ -179,6 +179,44 @@ void UserInterface::listCompletedTasks() const {
 	}
 }
 
+void UserInterface::removeTaskFromDashboard(std::stringstream& ss) {
+	uint32_t id;
+	ss >> id;
+
+	try {
+		task_manager.removeTaskFromDashboard(id);
+		std::cout << "Task removed successfully!\n";
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
+void UserInterface::addTaskToDashboard(std::stringstream& ss) {
+	uint32_t id;
+	ss >> id;
+
+	try {
+		task_manager.addTaskToDashboard(id);
+		std::cout << "Task added successfully!\n";
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+	catch (std::logic_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
+void UserInterface::listDashboard() const {
+	try {
+		task_manager.listDashboard();
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
 void UserInterface::start() {
 	std::cout << "TASK MANAGER\n\n";
 	std::cout << "> ";
@@ -230,6 +268,15 @@ void UserInterface::start() {
 		}
 		else if (strcmp(command, COMMANDS::LIST_COMPLETED_TASKS) == 0) {
 			listCompletedTasks();
+		}
+		else if (strcmp(command, COMMANDS::REMOVE_TASK_FROM_DASHBOARD) == 0) {
+			removeTaskFromDashboard(ss);
+		}
+		else if (strcmp(command, COMMANDS::ADD_TASK_TO_DASHBOARD) == 0) {
+			addTaskToDashboard(ss);
+		}
+		else if (strcmp(command, COMMANDS::LIST_DASHBOARD) == 0) {
+			listDashboard();
 		}
 		else {
 			std::cout << "Invalid command!\n";

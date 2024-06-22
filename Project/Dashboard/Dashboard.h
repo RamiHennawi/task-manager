@@ -7,6 +7,8 @@ class Dashboard {
 private:
 	Vector<Task*> tasks;
 
+	bool containsTask(Task& task) const;
+
 public:
 	Dashboard() = default;
 
@@ -14,7 +16,7 @@ public:
 	void readFromFile(std::ifstream& in);
 
 	void addTask(Task& task);
-	void removeTask(uint32_t id);
+	void removeTask(Task& task);
 
 	void listTasks() const;
 };

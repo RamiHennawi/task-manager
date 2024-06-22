@@ -97,7 +97,7 @@ void TaskManager::loadUsers() {
 			try {
 				loaded_user->addTask(getTask(loaded_id));
 			}
-			catch (...) {
+			catch (std::exception& exc) {
 				std::cout << "Error occurred when loading task with ID " << loaded_id << "." << std::endl;
 			}
 		}
@@ -283,6 +283,30 @@ void TaskManager::listCompletedTasks() const {
 	}
 
 	logged_in_user->listCompletedTasks();
+}
+
+void TaskManager::removeTaskFromDashboard(uint32_t id) {
+	if (!logged_in_user) {
+		throw std::runtime_error("No user is currently logged in.");
+	}
+
+	logged_in_user->removeTaskFromDashboard(id);
+}
+
+void TaskManager::addTaskToDashboard(uint32_t id) {
+	if (!logged_in_user) {
+		throw std::runtime_error("No user is currently logged in.");
+	}
+
+	logged_in_user->addTaskToDashboard(id);
+}
+
+void TaskManager::listDashboard() const {
+	if (!logged_in_user) {
+		throw std::runtime_error("No user is currently logged in.");
+	}
+
+	logged_in_user->listDashboard();
 }
 
 void TaskManager::addCollaboration(const MyString& name) {

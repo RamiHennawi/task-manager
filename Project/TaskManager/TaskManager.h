@@ -46,13 +46,19 @@ public:
 	void finishTask(uint32_t id);
 	void deleteTask(uint32_t id);
 
-	const Task& getUserTask(uint32_t id) const; // moje bi da e fr print?
+	const Task& getUserTask(uint32_t id) const;
 	const Task& getUserTask(const MyString& name) const;
 
 	void listTasks() const;
 	void listTasks(const MyString& final_date_str) const;
 	void listCompletedTasks() const;
 
+	// handle user dashboard
+	void removeTaskFromDashboard(uint32_t id);
+	void addTaskToDashboard(uint32_t id);
+	void listDashboard() const;
+
+	// handle collaborations
 	void addCollaboration(const MyString& name);
 	void deleteCollaboration(const MyString& name);
 

@@ -24,6 +24,10 @@ namespace COMMANDS {
 
 	constexpr const char* LIST_TASKS = "list-tasks";
 	constexpr const char* LIST_COMPLETED_TASKS = "list-completed-tasks";
+
+	constexpr const char* REMOVE_TASK_FROM_DASHBOARD = "remove-task-from-dashboard";
+	constexpr const char* ADD_TASK_TO_DASHBOARD = "add-task-to-dashboard";
+	constexpr const char* LIST_DASHBOARD = "list-dashboard";
 }
 
 class UserInterface {
@@ -46,6 +50,10 @@ private:
 
 	void listTasks(std::stringstream& ss) const;
 	void listCompletedTasks() const;
+
+	void removeTaskFromDashboard(std::stringstream& ss);
+	void addTaskToDashboard(std::stringstream& ss);
+	void listDashboard() const;
 
 public:
 	void start();

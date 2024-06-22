@@ -38,6 +38,7 @@ public:
 	void listTasks() const;
 	void listCompletedTasks() const;
 
+	void removeTaskFromDashboard(uint32_t id);
 	void addTaskToDashboard(uint32_t id);
 	void listDashboard() const;
 };
