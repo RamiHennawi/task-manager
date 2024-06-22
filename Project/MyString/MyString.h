@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 
 // source: Georgi Terziev's GitHub
 namespace StringHelperFunctions {
@@ -39,6 +40,9 @@ public:
 
     friend MyString operator+(const MyString& lhs, const MyString& rhs);
     friend std::istream& operator>>(std::istream& is, MyString& str);
+
+    void saveToFile(std::ofstream& out) const;
+    void readFromFile(std::ifstream& in);
 
 private:
     void copyFrom(const MyString& other);

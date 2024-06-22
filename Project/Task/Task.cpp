@@ -75,3 +75,22 @@ void Task::print() const {
 	std::cout << "Due date: " << ctime(&due_date);
 	std::cout << "Status: " << getStatusString() << std::endl;
 }
+
+void Task::saveTask(std::ofstream& out) const {
+	out.write(reinterpret_cast<const char*>(&id), sizeof(id));
+	out.write(reinterpret_cast<const char*>(&status), sizeof(status));
+	out.write(reinterpret_cast<const char*>(&due_date), sizeof(due_date));
+
+	name.saveToFile(out);
+	description.saveToFile(out);
+}
+
+void Task::readTask(std::ifstream& in) {
+	in.read(reinterpret_cast<char*>(&id), sizeof(id));
+	in.read(reinterpret_cast<char*>(&status), sizeof(status));
+	in.read(reinterpret_cast<char*>(&due_date), sizeof(due_date));
+
+	name.readFromFile(in);
+	description.readFromFile(in);
+}
+

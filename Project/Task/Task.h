@@ -1,5 +1,6 @@
 #pragma once
 #include <ctime>
+#include <fstream>
 #include "MyString.h"
 
 enum class TaskStatus {
@@ -40,4 +41,7 @@ public:
 	void finish();
 
 	void print() const;
+
+	void saveTask(std::ofstream& out) const;
+	void readTask(std::ifstream& in);
 };

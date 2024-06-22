@@ -17,6 +17,16 @@ namespace StringHelperFunctions {
 
 using namespace StringHelperFunctions;
 
+void MyString::saveToFile(std::ofstream& out) const {
+    out.write(reinterpret_cast<const char*>(&length), sizeof(length));
+    out.write(reinterpret_cast<const char*>(data), length + 1);
+}
+
+void MyString::readFromFile(std::ifstream& in) {
+    in.read(reinterpret_cast<char*>(&length), sizeof(length));
+    in.read(reinterpret_cast<char*>(data), length + 1);
+}
+
 void MyString::copyFrom(const MyString& other) {
     length = other.length;
     capacity = other.capacity;

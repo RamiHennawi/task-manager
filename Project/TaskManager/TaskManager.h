@@ -18,17 +18,20 @@ private:
 	uint32_t created_tasks = 0;
 	uint32_t created_collabs = 0;
 
-	void saveUser(const User& user) const;
-	void loadUsers();
+	Task& getTask(uint32_t id);
 
 	void saveТasks() const;
 	void loadTasks();
+
+	void saveUsers() const;
+	void loadUsers();
 
 	void saveCollaborations() const;
 	void loadCollaborations();
 
 public:
 	TaskManager();
+	~TaskManager();
 
 	void registerUser(const MyString& username, const MyString& password);
 	void loginUser(const MyString& username, const MyString& password);
@@ -43,8 +46,8 @@ public:
 	void finishTask(uint32_t id);
 	void deleteTask(uint32_t id);
 
-	void getTask(uint32_t id) const;
-	void getTask(const MyString& name) const;
+	const Task& getUserTask(uint32_t id) const; // moje bi da e fr print?
+	const Task& getUserTask(const MyString& name) const;
 
 	void listTasks() const;
 	void listTasks(const MyString& final_date_str) const;

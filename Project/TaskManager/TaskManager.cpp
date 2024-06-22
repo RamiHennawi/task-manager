@@ -1,56 +1,127 @@
 ﻿#include "TaskManager.h"
 #include <fstream>
 
-void TaskManager::saveUser(const User& user) const {
-	/*std::ofstream out(FILE_DB_USERS, std::ios::binary | std::ios::app);
+Task& TaskManager::getTask(uint32_t id) {
+	size_t tasks_count = tasks.getSize();
 
-	if (!out.is_open()) {
-		throw std::runtime_error("Unable to save user to file.");
+	for (size_t i = 0; i < tasks_count; i++) {
+		if (tasks[i].getID() == id) {
+			return tasks[i];
+		}
 	}
 
-	short usernameSize = user.getUsername().getLength() + 1;
-	short passwordSize = user.getPassword().getLength() + 1;
+	throw std::runtime_error("No task with that ID found.");
+}
 
-	out.write(reinterpret_cast<const char*>(&usernameSize), sizeof(short));
-	out.write(reinterpret_cast<const char*>(&passwordSize), sizeof(short));
-	out.write(reinterpret_cast<const char*>(&user.getUsername()), usernameSize);
-	out.write(reinterpret_cast<const char*>(&user.getPassword()), passwordSize);
+void TaskManager::saveТasks() const {
+	std::ofstream out(FILE_DB_TASKS, std::ios::binary | std::ios::out);
 
-	out.close();*/
+	if (!out.is_open()) {
+		throw std::runtime_error("Unable to open tasks DB.");
+	}
+	
+	size_t tasks_count = tasks.getSize();
+	out.write(reinterpret_cast<const char*>(&tasks_count), sizeof(tasks_count));
+
+	// save the number of created tasks, so we can use it on next load as id
+	out.write(reinterpret_cast<const char*>(&created_tasks), sizeof(created_tasks));
+
+	for (size_t i = 0; i < tasks_count; i++) {
+		tasks[i].saveTask(out);
+	}
+
+	out.close();
+}
+
+void TaskManager::loadTasks() {
+	std::ifstream in(FILE_DB_TASKS, std::ios::binary | std::ios::in);
+
+	if (!in.is_open()) {
+		throw std::runtime_error("Unable to open tasks DB.");
+	}
+
+	size_t tasks_count;
+	in.read(reinterpret_cast<char*>(&tasks_count), sizeof(tasks_count));
+
+	uint32_t current_id;
+	in.read(reinterpret_cast<char*>(&current_id), sizeof(current_id));
+	created_tasks = current_id;
+
+	for (size_t i = 0; i < tasks_count; i++) {
+		Task* task = new Task();
+		task->readTask(in);
+
+		tasks.pushBack(*task);
+	}
+}
+
+void TaskManager::saveUsers() const {
+	std::ofstream out(FILE_DB_USERS, std::ios::binary | std::ios::out);
+
+	if (!out.is_open()) {
+		throw std::runtime_error("Unable to open users DB.");
+	}
+
+	size_t users_count = users.getSize();
+	out.write(reinterpret_cast<const char*>(&users_count), sizeof(users_count));
+
+	for (size_t i = 0; i < users_count; i++) {
+		users[i].saveToFile(out);
+	}
+
+	out.close();
 }
 
 void TaskManager::loadUsers() {
-	/*std::ifstream in(FILE_DB_USERS, std::ios::binary);
+	std::ifstream in(FILE_DB_USERS, std::ios::binary);
 
 	if (!in.is_open()) {
 		throw std::runtime_error("Unable to open users DB.");
 	}
 
-	while (true) {
-		short usernameSize, passwordSize;
-		in.read(reinterpret_cast<char*>(&usernameSize), sizeof(short));
-		in.read(reinterpret_cast<char*>(&passwordSize), sizeof(short));
+	size_t users_count;
+	in.read(reinterpret_cast<char*>(&users_count), sizeof(users_count));
 
-		char* username = new char[usernameSize];
-		char* password = new char[passwordSize];
-		in.read(reinterpret_cast<char*>(&username), usernameSize);
-		in.read(reinterpret_cast<char*>(&password), usernameSize);
+	for (size_t i = 0; i < users_count; i++) {
+		User* loaded_user = new User();
+		loaded_user->readFromFile(in);
 
-		User newUser(username, password);
-		users.pushBack(newUser);
+		// load user's tasks
+		size_t user_tasks_count;
+		in.read(reinterpret_cast<char*>(&user_tasks_count), sizeof(user_tasks_count));
 
-		if (in.eof()) {
-			break;
+		for (size_t j = 0; j < user_tasks_count; j++) {
+			uint32_t loaded_id;
+			in.read(reinterpret_cast<char*>(&loaded_id), sizeof(loaded_id));
+
+			try {
+				loaded_user->addTask(getTask(loaded_id));
+			}
+			catch (...) {
+				std::cout << "Error occurred when loading task with ID " << loaded_id << "." << std::endl;
+			}
 		}
+
+		// load users's dashboard tasks
+		size_t user_dashboard_tasks_count;
+		in.read(reinterpret_cast<char*>(&user_dashboard_tasks_count), sizeof(user_dashboard_tasks_count));
+
+		for (size_t j = 0; j < user_dashboard_tasks_count; j++) {
+			uint32_t loaded_id;
+			in.read(reinterpret_cast<char*>(&loaded_id), sizeof(loaded_id));
+
+			try {
+				loaded_user->addTaskToDashboard(loaded_id);
+			}
+			catch (...) {
+				std::cout << "Error occurred when loading task with ID " << loaded_id << "." << std::endl;
+			}
+		}
+
+		users.pushBack(*loaded_user);
 	}
 
-	in.close();*/
-}
-
-void TaskManager::saveТasks() const {
-}
-
-void TaskManager::loadTasks() {
+	in.close();
 }
 
 void TaskManager::saveCollaborations() const {
@@ -60,9 +131,16 @@ void TaskManager::loadCollaborations() {
 }
 
 TaskManager::TaskManager() {
-	loadUsers();
 	loadTasks();
+	loadUsers();
 	loadCollaborations();
+	// try catch!
+}
+
+TaskManager::~TaskManager() {
+	saveТasks();
+	saveUsers();
+	saveCollaborations();
 	// try catch!
 }
 
@@ -75,9 +153,8 @@ void TaskManager::registerUser(const MyString& username, const MyString& passwor
 		}
 	}
 
-	User new_user(username, password);
-	users.pushBack(new_user);
-	saveUser(new_user);
+	User* new_user = new User(username, password);
+	users.pushBack(*new_user);
 }
 
 void TaskManager::loginUser(const MyString& username, const MyString& password) {
@@ -168,20 +245,20 @@ void TaskManager::deleteTask(uint32_t id) {
 	}
 }
 
-void TaskManager::getTask(uint32_t id) const {
+const Task& TaskManager::getUserTask(uint32_t id) const {
 	if (!logged_in_user) {
 		throw std::runtime_error("No user is currently logged in.");
 	}
 
-	logged_in_user->getTask(id).print();
+	logged_in_user->getTask(id);
 }
 
-void TaskManager::getTask(const MyString& name) const {
+const Task& TaskManager::getUserTask(const MyString& name) const {
 	if (!logged_in_user) {
 		throw std::runtime_error("No user is currently logged in.");
 	}
 
-	logged_in_user->getTask(name).print();
+	logged_in_user->getTask(name);
 }
 
 void TaskManager::listTasks() const {

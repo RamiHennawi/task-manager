@@ -60,16 +60,17 @@ void UserInterface::getTask(std::stringstream& ss) {
 	ss >> name;
 
 	try {
-		task_manager.getTask(name);
+		task_manager.getUserTask(name).print();
 	}
 	catch (std::runtime_error& exc) {
 		// check if it was get-task id
 		std::stringstream numberString(name);
+
 		uint32_t id;
 		numberString >> id;
 
 		try {
-			task_manager.getTask(id);
+			task_manager.getUserTask(id).print();
 		}
 		catch (std::runtime_error& exc) {
 			std::cout << exc.what() << std::endl;

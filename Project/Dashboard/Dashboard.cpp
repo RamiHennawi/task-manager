@@ -1,5 +1,19 @@
 #include "Dashboard.h"
 
+void Dashboard::saveToFile(std::ofstream& out) const {
+	size_t tasks_count = tasks.getSize();
+	out.write(reinterpret_cast<const char*>(&tasks_count), sizeof(tasks_count));
+
+	for (size_t i = 0; i < tasks_count; i++) {
+		uint32_t task_id = tasks[i]->getID();
+		out.write(reinterpret_cast<const char*>(&task_id), sizeof(task_id));
+	}
+}
+
+void Dashboard::readFromFile(std::ifstream& in) {
+	
+}
+
 void Dashboard::addTask(Task& task) {
 	if (task.getStatus() != TaskStatus::OVERDUE) {
 		tasks.pushBack(&task);

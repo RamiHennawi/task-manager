@@ -1,4 +1,5 @@
 #pragma once
+#include <fstream>
 #include "MyString.h"
 #include "Task.h"
 #include "Dashboard.h"
@@ -17,6 +18,9 @@ public:
 
 	const MyString& getUsername() const;
 	const MyString& getPassword() const;
+
+	void saveToFile(std::ofstream& out) const;
+	void readFromFile(std::ifstream& in);
 
 	void addTask(Task& task);
 

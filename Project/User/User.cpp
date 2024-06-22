@@ -10,6 +10,28 @@ const MyString& User::getPassword() const {
 	return password;
 }
 
+void User::saveToFile(std::ofstream& out) const {
+	username.saveToFile(out);
+	password.saveToFile(out);
+
+	// save the id's of the tasks
+	size_t tasks_count = tasks.getSize();
+	out.write(reinterpret_cast<const char*>(&tasks_count), sizeof(tasks_count));
+
+	for (size_t i = 0; i < tasks_count; i++) {
+		uint32_t task_id = tasks[i]->getID();
+		out.write(reinterpret_cast<const char*>(&task_id), sizeof(task_id));
+	}
+
+	// save the id's in the dashboard
+	dashboard.saveToFile(out);
+}
+
+void User::readFromFile(std::ifstream& in) {
+	username.readFromFile(in);
+	password.readFromFile(in);
+}
+
 void User::addTask(Task& task) {
 	size_t tasks_count = tasks.getSize();
 
@@ -171,14 +193,7 @@ void User::listCompletedTasks() const {
 void User::addTaskToDashboard(uint32_t id) {
 	Task task = getTask(id);
 
-	try {
-		dashboard.addTask(task);
-		std::cout << "Task added successfully!" << std::endl;
-	}
-	catch (const std::runtime_error& e) {
-		// maybe handle it on a higher level??
-		std::cout << e.what() << std::endl;
-	}
+	dashboard.addTask(task);
 }
 
 void User::listDashboard() const {
