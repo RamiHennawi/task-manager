@@ -145,6 +145,40 @@ void UserInterface::deleteTask(std::stringstream& ss) {
 	}
 }
 
+void UserInterface::listTasks(std::stringstream& ss) const {
+	char date[ARGUMENT_SIZE];
+	ss >> date;
+
+	if (!strlen(date)) {
+		try {
+			task_manager.listTasks();
+		}
+		catch (std::runtime_error& exc) {
+			std::cout << exc.what() << std::endl;
+		}
+	}
+	else {
+		try {
+			task_manager.listTasks(date);
+		}
+		catch (std::invalid_argument& exc) {
+			std::cout << exc.what() << std::endl;
+		}
+		catch (std::runtime_error& exc) {
+			std::cout << exc.what() << std::endl;
+		}
+	}
+}
+
+void UserInterface::listCompletedTasks() const {
+	try {
+		task_manager.listCompletedTasks();
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
 void UserInterface::start() {
 	std::cout << "TASK MANAGER\n\n";
 	std::cout << "> ";
@@ -190,6 +224,12 @@ void UserInterface::start() {
 		}
 		else if (strcmp(command, COMMANDS::DELETE_TASK) == 0) {
 			deleteTask(ss);
+		}
+		else if (strcmp(command, COMMANDS::LIST_TASKS) == 0) {
+			listTasks(ss);
+		}
+		else if (strcmp(command, COMMANDS::LIST_COMPLETED_TASKS) == 0) {
+			listCompletedTasks();
 		}
 		else {
 			std::cout << "Invalid command!\n";

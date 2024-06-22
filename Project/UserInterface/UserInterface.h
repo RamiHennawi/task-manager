@@ -21,6 +21,9 @@ namespace COMMANDS {
 	constexpr const char* START_TASK = "start-task";
 	constexpr const char* FINISH_TASK = "finish-task";
 	constexpr const char* DELETE_TASK = "delete-task";
+
+	constexpr const char* LIST_TASKS = "list-tasks";
+	constexpr const char* LIST_COMPLETED_TASKS = "list-completed-tasks";
 }
 
 class UserInterface {
@@ -40,6 +43,9 @@ private:
 	void startTask(std::stringstream& ss);
 	void finishTask(std::stringstream& ss);
 	void deleteTask(std::stringstream& ss);
+
+	void listTasks(std::stringstream& ss) const;
+	void listCompletedTasks() const;
 
 public:
 	void start();
