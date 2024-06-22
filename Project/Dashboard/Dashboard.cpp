@@ -59,8 +59,15 @@ void Dashboard::listTasks() const {
 		throw std::runtime_error("Dashboard is empty.");
 	}
 
+	std::cout << "Dashboard:\n";
+
 	for (size_t i = 0; i < tasks_count; i++) {
 		tasks[i]->print();
-		std::cout << "-----------------" << std::endl;
+		
+		if (i != (tasks_count - 1)) {
+			std::cout << "-----------------" << std::endl;
+		}
 	}
+
+	std::cout << std::endl;
 }

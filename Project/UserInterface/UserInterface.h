@@ -28,6 +28,12 @@ namespace COMMANDS {
 	constexpr const char* REMOVE_TASK_FROM_DASHBOARD = "remove-task-from-dashboard";
 	constexpr const char* ADD_TASK_TO_DASHBOARD = "add-task-to-dashboard";
 	constexpr const char* LIST_DASHBOARD = "list-dashboard";
+
+	constexpr const char* ADD_COLLABORATION = "add-collaboration";
+	constexpr const char* DELETE_COLLABORATION = "delete-collaboration";
+	constexpr const char* LIST_COLLABORATIONS = "list-collaborations";
+	constexpr const char* ADD_USER_TO_COLLABORATION = "add-user";
+	constexpr const char* ASSIGN_TASK_IN_COLLABORATION = "assign-task";
 }
 
 class UserInterface {
@@ -54,6 +60,12 @@ private:
 	void removeTaskFromDashboard(std::stringstream& ss);
 	void addTaskToDashboard(std::stringstream& ss);
 	void listDashboard() const;
+
+	void addCollaboration(std::stringstream& ss);
+	void deleteCollaboration(std::stringstream& ss);
+	void listCollaborations() const;
+	void addUserToCollaboration(std::stringstream& ss);
+	void assignTaskInCollaboration(std::stringstream& ss);
 
 public:
 	void start();

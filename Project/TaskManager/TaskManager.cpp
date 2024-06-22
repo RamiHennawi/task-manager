@@ -13,6 +13,18 @@ Task& TaskManager::getTask(uint32_t id) {
 	throw std::runtime_error("No task with that ID found.");
 }
 
+User& TaskManager::getUser(const MyString& username) {
+	size_t users_count = users.getSize();
+
+	for (size_t i = 0; i < users_count; i++) {
+		if (users[i].getUsername() == username) {
+			return users[i];
+		}
+	}
+
+	throw std::runtime_error("No user with that username found.");
+}
+
 void TaskManager::saveТasks() const {
 	std::ofstream out(FILE_DB_TASKS, std::ios::binary | std::ios::out);
 
@@ -53,6 +65,8 @@ void TaskManager::loadTasks() {
 
 		tasks.pushBack(*task);
 	}
+
+	in.close();
 }
 
 void TaskManager::saveUsers() const {
@@ -125,9 +139,79 @@ void TaskManager::loadUsers() {
 }
 
 void TaskManager::saveCollaborations() const {
+	std::ofstream out(FILE_DB_COLLABORATIONS, std::ios::binary | std::ios::out);
+
+	if (!out.is_open()) {
+		throw std::runtime_error("Unable to open collaborations DB.");
+	}
+
+	size_t collabs_count = collaborations.getSize();
+	out.write(reinterpret_cast<const char*>(&collabs_count), sizeof(collabs_count));
+
+	// save the number of created collabs, so we can use it on next load as id
+	out.write(reinterpret_cast<const char*>(&created_collabs), sizeof(created_collabs));
+
+	for (size_t i = 0; i < collabs_count; i++) {
+		collaborations[i].saveCollaboration(out);
+	}
+
+	out.close();
 }
 
 void TaskManager::loadCollaborations() {
+	std::ifstream in(FILE_DB_COLLABORATIONS, std::ios::binary | std::ios::in);
+
+	if (!in.is_open()) {
+		throw std::runtime_error("Unable to open collaborations DB.");
+	}
+
+	size_t collabs_count;
+	in.read(reinterpret_cast<char*>(&collabs_count), sizeof(collabs_count));
+
+	uint32_t current_id;
+	in.read(reinterpret_cast<char*>(&current_id), sizeof(current_id));
+	created_collabs = current_id;
+
+	for (size_t i = 0; i < collabs_count; i++) {
+		Collaboration* collab = new Collaboration();
+		collab->readCollaboration(in);
+
+		// load users in collaboration
+		size_t collab_users_count;
+		in.read(reinterpret_cast<char*>(&collab_users_count), sizeof(collab_users_count));
+
+		for (size_t j = 0; j < collab_users_count; j++) {
+			MyString user_name;
+			user_name.readFromFile(in);
+
+			try {
+				collab->addUser(getUser(user_name));
+			}
+			catch (std::exception& exc) {
+				std::cout << exc.what() << std::endl;
+			}
+		}
+
+		// load tasks in collaboration
+		size_t collab_tasks_count;
+		in.read(reinterpret_cast<char*>(&collab_tasks_count), sizeof(collab_tasks_count));
+
+		for (size_t j = 0; j < collab_tasks_count; j++) {
+			uint32_t loaded_id;
+			in.read(reinterpret_cast<char*>(&loaded_id), sizeof(loaded_id));
+
+			try {
+				collab->addTask(getTask(loaded_id));
+			}
+			catch (std::exception& exc) {
+				std::cout << exc.what() << std::endl;
+			}
+		}
+
+		collaborations.pushBack(*collab);
+	}
+
+	in.close();
 }
 
 TaskManager::TaskManager() {
@@ -226,6 +310,7 @@ void TaskManager::deleteTask(uint32_t id) {
 		throw std::runtime_error("No user is currently logged in.");
 	}
 
+	// delete from the user list + dashboard
 	logged_in_user->deleteTask(id);
 
 	// delete from tasks vector
@@ -314,8 +399,8 @@ void TaskManager::addCollaboration(const MyString& name) {
 		throw std::runtime_error("No user is currently logged in.");
 	}
 
-	Collaboration new_collaboration(created_collabs++, name, logged_in_user->getUsername());
-	collaborations.pushBack(new_collaboration);
+	Collaboration* new_collaboration = new Collaboration(created_collabs++, name, logged_in_user->getUsername());
+	collaborations.pushBack(*new_collaboration);
 }
 
 void TaskManager::deleteCollaboration(const MyString& name) {
@@ -325,19 +410,14 @@ void TaskManager::deleteCollaboration(const MyString& name) {
 
 	size_t collaborations_count = collaborations.getSize();
 	for (size_t i = 0; i < collaborations_count; i++) {
+		// find the collaboration by name
 		if (collaborations[i].getName() == name) {
 			size_t tasks_count = collaborations[i].getTasksCount();
 
+			// get the id of the task and then remove it (we pop it at the end from the vector in colaborations 
+			// => we always work with the task at index 0
 			for (size_t j = 0; j < tasks_count; j++) {
-				Task current_task = collaborations[i].getTaskAtIndex(j);
-				size_t users_count = users.getSize();
-
-				/*for (size_t k = 0; k < users_count; k++) {
-					if (collaborations[i].includesUser(users[k].getUsername()) && users[k].hasTask(current_task.getName(), current_task.getDueDate())) {
-						uint32_t task_id = users[k].getTask(current_task.getName()).getID();
-						users[k].deleteTask(task_id);
-					}
-				}*/
+				deleteTask(collaborations[i].getTaskIDAtIndex(0));
 			}
 
 			collaborations.popAt(i);
@@ -361,7 +441,11 @@ void TaskManager::listCollaborations() const {
 
 	for (size_t i = 0; i < collaborations_count; i++) {
 		if (collaborations[i].includesUser(logged_in_user->getUsername())) {
-			std::cout << collaborations[i].getName() << ", ";
+			std::cout << collaborations[i].getName();
+
+			if (i != (collaborations_count - 1)) {
+				std::cout << ", ";
+			}
 		}
 	}
 
@@ -385,7 +469,7 @@ void TaskManager::listTasksInCollaboration(const MyString& name) const {
 }
 
 void TaskManager::addCollaborator(const MyString& collaboration_name, const MyString& user_name) {
-	/*if (!logged_in_user) {
+	if (!logged_in_user) {
 		throw std::runtime_error("No user is currently logged in.");
 	}
 
@@ -398,31 +482,23 @@ void TaskManager::addCollaborator(const MyString& collaboration_name, const MySt
 		}
 	}
 
-	throw std::runtime_error("No collaboration with that name found.");*/
+	throw std::runtime_error("No collaboration with that name found.");
 }
 
-void TaskManager::assignTaskInCollaboration(const MyString& collaboration_name, const MyString& asignee_name, const MyString& task_name, const MyString& task_final_date_str, const MyString& task_description) {
+void TaskManager::assignTaskInCollaboration(const MyString& collaboration_name, const MyString& assignee_name, const MyString& task_name, const MyString& task_final_date_str, const MyString& task_description) {
 	if (!logged_in_user) {
 		throw std::runtime_error("No user is currently logged in.");
 	}
 
-	Task new_task(created_tasks++, task_name, task_final_date_str, task_description);
+	CollaborationTask* new_task = new CollaborationTask(created_tasks++, task_name, task_final_date_str, task_description, getUser(assignee_name));
+
+	// TODO: check if assignee exists??
 
 	size_t collaborations_count = collaborations.getSize();
-
 	for (size_t i = 0; i < collaborations_count; i++) {
+		// find collaboration
 		if (collaborations[i].getName() == collaboration_name) {
-			/*collaborations[i].assignTask(new_task, getUser(asignee_name));*/
-			// check if user exists?
-			
-			size_t users_count = users.getSize();
-			for (size_t j = 0; j < users_count; j++) {
-				if (users[i].getUsername() == asignee_name) {
-					users[i].addTask(new_task);
-					break;
-				}
-			}
-
+			collaborations[i].addTask(*new_task);
 			return;
 		}
 	}

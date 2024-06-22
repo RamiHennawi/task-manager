@@ -146,17 +146,22 @@ void User::listTasks(const MyString& final_date_str) const {
 	bool exists_task = false;
 
 	for (size_t i = 0; i < tasks_count; i++) {
-		if (tasks[i]->getDueDate() < final_date) {
+		if (tasks[i]->getDueDate() <= final_date) {
 			exists_task = true;
 
 			tasks[i]->print();
-			std::cout << "-----------------" << std::endl;
+
+			if (i != (tasks_count - 1)) {
+				std::cout << "-----------------" << std::endl;
+			}
 		}
 	}
 
 	if (!exists_task) {
 		throw std::runtime_error("There are no tasks before that date.");
 	}
+
+	std::cout << std::endl;
 }
 
 void User::listTasks() const {
@@ -168,8 +173,13 @@ void User::listTasks() const {
 
 	for (size_t i = 0; i < tasks_count; i++) {
 		tasks[i]->print();
-		std::cout << "-----------------" << std::endl;
+
+		if (i != (tasks_count - 1)) {
+			std::cout << "-----------------" << std::endl;
+		}
 	}
+
+	std::cout << std::endl;
 }
 
 void User::listCompletedTasks() const {
@@ -181,13 +191,18 @@ void User::listCompletedTasks() const {
 			exists_task = true;
 
 			tasks[i]->print();
-			std::cout << "-----------------" << std::endl;
+
+			if (i != (tasks_count - 1)) {
+				std::cout << "-----------------" << std::endl;
+			}
 		}
 	}
 
 	if (!exists_task) {
 		throw std::runtime_error("There are no completed tasks.");
 	}
+
+	std::cout << std::endl;
 }
 
 void User::removeTaskFromDashboard(uint32_t id) {

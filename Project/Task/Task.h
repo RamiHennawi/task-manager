@@ -40,8 +40,8 @@ public:
 	void start();
 	void finish();
 
-	void print() const;
+	virtual void print() const;
 
-	void saveTask(std::ofstream& out) const;
-	void readTask(std::ifstream& in);
+	virtual void saveTask(std::ofstream& out) const;
+	virtual void readTask(std::ifstream& in);
 };

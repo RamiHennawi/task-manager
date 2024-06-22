@@ -63,7 +63,7 @@ void UserInterface::getTask(std::stringstream& ss) {
 		task_manager.getUserTask(name).print();
 	}
 	catch (std::runtime_error& exc) {
-		// check if it was get-task id
+		// check if it was get-task <id>
 		std::stringstream numberString(name);
 
 		uint32_t id;
@@ -125,7 +125,7 @@ void UserInterface::finishTask(std::stringstream& ss) {
 
 	try {
 		task_manager.finishTask(id);
-		std::cout << "Task finished succesfully!\n";
+		std::cout << "Task finished succesfully! Congrats on completing it!\n";
 	}
 	catch (std::runtime_error& exc) {
 		std::cout << exc.what() << std::endl;
@@ -138,7 +138,7 @@ void UserInterface::deleteTask(std::stringstream& ss) {
 
 	try {
 		task_manager.deleteTask(id);
-		std::cout << "Task finished succesfully!\n";
+		std::cout << "Task deleted succesfully!\n";
 	}
 	catch (std::runtime_error& exc) {
 		std::cout << exc.what() << std::endl;
@@ -146,10 +146,10 @@ void UserInterface::deleteTask(std::stringstream& ss) {
 }
 
 void UserInterface::listTasks(std::stringstream& ss) const {
-	char date[ARGUMENT_SIZE];
-	ss >> date;
+	char input[ARGUMENT_SIZE];
+	ss >> input;
 
-	if (!strlen(date)) {
+	if (!strlen(input)) {
 		try {
 			task_manager.listTasks();
 		}
@@ -158,14 +158,22 @@ void UserInterface::listTasks(std::stringstream& ss) const {
 		}
 	}
 	else {
+		// check if it was get-task <collab-name>
 		try {
-			task_manager.listTasks(date);
+			task_manager.listTasksInCollaboration(input);
 		}
-		catch (std::invalid_argument& exc) {
-			std::cout << exc.what() << std::endl;
-		}
-		catch (std::runtime_error& exc) {
-			std::cout << exc.what() << std::endl;
+		catch (std::runtime_error& e) {
+			// check if it was get-task <date>
+			try {
+				task_manager.listTasks(input);
+			}
+			catch (std::runtime_error& exc) {
+				std::cout << exc.what() << std::endl;
+			}
+			catch (...) {
+				std::cout << "No collaboration with that name found or incorrect data format (must be yyyy-mm-dd)." << std::endl;
+			}
+
 		}
 	}
 }
@@ -211,6 +219,69 @@ void UserInterface::addTaskToDashboard(std::stringstream& ss) {
 void UserInterface::listDashboard() const {
 	try {
 		task_manager.listDashboard();
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
+void UserInterface::addCollaboration(std::stringstream& ss) {
+	char name[ARGUMENT_SIZE];
+	ss >> name;
+
+	try {
+		task_manager.addCollaboration(name);
+		std::cout << "Collaboration added succesfully!\n";
+	}
+	catch(std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
+void UserInterface::deleteCollaboration(std::stringstream& ss) {
+	char name[ARGUMENT_SIZE];
+	ss >> name;
+
+	try {
+		task_manager.deleteCollaboration(name);
+		std::cout << "Collaboration deleted succesfully!\n";
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
+void UserInterface::listCollaborations() const {
+	try {
+		task_manager.listCollaborations();
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
+void UserInterface::addUserToCollaboration(std::stringstream& ss) {
+	char collab_name[ARGUMENT_SIZE], user_name[ARGUMENT_SIZE];
+	ss >> collab_name >> user_name;
+
+	try {
+		task_manager.addCollaborator(collab_name, user_name);
+		std::cout << "User added succesfully to " << collab_name << "!\n";
+	}
+	catch (std::runtime_error& exc) {
+		std::cout << exc.what() << std::endl;
+	}
+}
+
+void UserInterface::assignTaskInCollaboration(std::stringstream& ss) {
+	char collab_name[ARGUMENT_SIZE], user_name[ARGUMENT_SIZE], task_name[ARGUMENT_SIZE], task_date[ARGUMENT_SIZE], task_desc[ARGUMENT_SIZE];
+	ss >> collab_name >> user_name >> task_name >> task_date;
+	ss.ignore(); // ignore additional ' '
+	ss.getline(task_desc, ARGUMENT_SIZE); // it could have ' '
+
+	try {
+		task_manager.assignTaskInCollaboration(collab_name, user_name, task_name, task_date, task_desc);
+		std::cout << "Task assigned succesfully to " << user_name << "!\n";
 	}
 	catch (std::runtime_error& exc) {
 		std::cout << exc.what() << std::endl;
@@ -277,6 +348,21 @@ void UserInterface::start() {
 		}
 		else if (strcmp(command, COMMANDS::LIST_DASHBOARD) == 0) {
 			listDashboard();
+		}
+		else if (strcmp(command, COMMANDS::ADD_COLLABORATION) == 0) {
+			addCollaboration(ss);
+		}
+		else if (strcmp(command, COMMANDS::DELETE_COLLABORATION) == 0) {
+			deleteCollaboration(ss);
+		}
+		else if (strcmp(command, COMMANDS::LIST_COLLABORATIONS) == 0) {
+			listCollaborations();
+		}
+		else if (strcmp(command, COMMANDS::ADD_USER_TO_COLLABORATION) == 0) {
+			addUserToCollaboration(ss);
+		}
+		else if (strcmp(command, COMMANDS::ASSIGN_TASK_IN_COLLABORATION) == 0) {
+			assignTaskInCollaboration(ss);
 		}
 		else {
 			std::cout << "Invalid command!\n";

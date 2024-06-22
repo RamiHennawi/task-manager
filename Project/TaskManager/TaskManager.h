@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "User.h"
 #include "Task.h"
+#include "CollaborationTask.h"
 #include "Collaboration.h"
 #include "Vector.hpp"
 
@@ -19,6 +20,7 @@ private:
 	uint32_t created_collabs = 0;
 
 	Task& getTask(uint32_t id);
+	User& getUser(const MyString& username);
 
 	void saveТasks() const;
 	void loadTasks();
@@ -66,5 +68,5 @@ public:
 	void listTasksInCollaboration(const MyString& name) const;
 
 	void addCollaborator(const MyString& collaboration_name, const MyString& user_name);
-	void assignTaskInCollaboration(const MyString& collaboration_name, const MyString& asignee_name, const MyString& task_name, const MyString& task_final_date_str, const MyString& task_description);
+	void assignTaskInCollaboration(const MyString& collaboration_name, const MyString& assignee_name, const MyString& task_name, const MyString& task_final_date_str, const MyString& task_description);
 };
