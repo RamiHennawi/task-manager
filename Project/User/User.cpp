@@ -196,6 +196,7 @@ void User::removeTaskFromDashboard(uint32_t id) {
 	for (size_t i = 0; i < tasks_count; i++) {
 		if (tasks[i]->getID() == id) {
 			dashboard.removeTask(*tasks[i]);
+			return;
 		}
 	}
 
@@ -208,6 +209,7 @@ void User::addTaskToDashboard(uint32_t id) {
 	for (size_t i = 0; i < tasks_count; i++) {
 		if (tasks[i]->getID() == id) {
 			dashboard.addTask(*tasks[i]);
+			return;
 		}
 	}
 

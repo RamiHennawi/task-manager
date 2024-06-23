@@ -2,15 +2,7 @@
 #include <fstream>
 
 Task& TaskManager::getTask(uint32_t id) {
-	size_t tasks_count = tasks.getSize();
-
-	for (size_t i = 0; i < tasks_count; i++) {
-		if (tasks[i].getID() == id) {
-			return tasks[i];
-		}
-	}
-
-	throw std::runtime_error("No task with that ID found.");
+	return tasks.getTask(id);
 }
 
 User& TaskManager::getUser(const MyString& username) {
@@ -31,16 +23,11 @@ void TaskManager::saveТasks() const {
 	if (!out.is_open()) {
 		throw std::runtime_error("Unable to open tasks DB.");
 	}
-	
-	size_t tasks_count = tasks.getSize();
-	out.write(reinterpret_cast<const char*>(&tasks_count), sizeof(tasks_count));
 
 	// save the number of created tasks, so we can use it on next load as id
 	out.write(reinterpret_cast<const char*>(&created_tasks), sizeof(created_tasks));
-
-	for (size_t i = 0; i < tasks_count; i++) {
-		tasks[i].saveToFile(out);
-	}
+	
+	tasks.saveToFile(out);
 
 	out.close();
 }
@@ -52,19 +39,11 @@ void TaskManager::loadTasks() {
 		throw std::runtime_error("Unable to open tasks DB.");
 	}
 
-	size_t tasks_count;
-	in.read(reinterpret_cast<char*>(&tasks_count), sizeof(tasks_count));
-
 	uint32_t current_id;
 	in.read(reinterpret_cast<char*>(&current_id), sizeof(current_id));
 	created_tasks = current_id;
 
-	for (size_t i = 0; i < tasks_count; i++) {
-		Task* task = new Task();;
-		task->readFromFile(in);
-
-		tasks.pushBack(*task); // add the task to the vector
-	}
+	tasks.readFromFile(in);
 
 	in.close();
 }
@@ -112,7 +91,7 @@ void TaskManager::loadUsers() {
 				loaded_user->addTask(getTask(loaded_id));
 			}
 			catch (std::exception& exc) {
-				std::cout << "Error occurred when loading task with ID " << loaded_id << "." << std::endl;
+				std::cout << "Error occurred when loading task with ID " << loaded_id << ": " << exc.what() << std::endl;
 			}
 		}
 
@@ -127,8 +106,9 @@ void TaskManager::loadUsers() {
 			try {
 				loaded_user->addTaskToDashboard(loaded_id);
 			}
-			catch (...) {
-				std::cout << "Error occurred when adding to dashboard task with ID " << loaded_id << "." << std::endl;
+			catch (const std::exception& exc) {
+				std::cout << loaded_user->getUsername() << std::endl;
+				std::cout << "Error occurred when adding to dashboard task with ID " << loaded_id << ": " << exc.what() << std::endl;
 			}
 		}
 
@@ -146,11 +126,11 @@ void TaskManager::saveCollaborations() const {
 		throw std::runtime_error("Unable to open collaborations DB.");
 	}
 
-	size_t collabs_count = collaborations.getSize();
-	out.write(reinterpret_cast<const char*>(&collabs_count), sizeof(collabs_count));
-
 	// save the number of created collabs, so we can use it on next load as id
 	out.write(reinterpret_cast<const char*>(&created_collabs), sizeof(created_collabs));
+
+	size_t collabs_count = collaborations.getSize();
+	out.write(reinterpret_cast<const char*>(&collabs_count), sizeof(collabs_count));
 
 	for (size_t i = 0; i < collabs_count; i++) {
 		collaborations[i].saveToFile(out);
@@ -166,12 +146,12 @@ void TaskManager::loadCollaborations() {
 		throw std::runtime_error("Unable to open collaborations DB.");
 	}
 
-	size_t collabs_count;
-	in.read(reinterpret_cast<char*>(&collabs_count), sizeof(collabs_count));
-
 	uint32_t current_id;
 	in.read(reinterpret_cast<char*>(&current_id), sizeof(current_id));
 	created_collabs = current_id;
+
+	size_t collabs_count;
+	in.read(reinterpret_cast<char*>(&collabs_count), sizeof(collabs_count));
 
 	for (size_t i = 0; i < collabs_count; i++) {
 		Collaboration* collab = new Collaboration();
@@ -304,7 +284,7 @@ void TaskManager::addTask(const MyString& name, const MyString& due_date_str, co
 	}
 
 	Task* new_task = new Task(created_tasks++, name, due_date_str, description);
-	tasks.pushBack(*new_task);
+	tasks.addTask(new_task);
 	logged_in_user->addTask(*new_task);
 }
 
@@ -349,12 +329,7 @@ void TaskManager::deleteTask(uint32_t id) {
 	logged_in_user->deleteTask(id);
 
 	// delete from tasks vector
-	size_t tasks_count = tasks.getSize();
-	for (size_t i = 0; i < tasks_count; i++) {
-		if (tasks[i].getID() == id) {
-			tasks.popAt(i);
-		}
-	}
+	tasks.removeTask(id);
 
 	// delete from collaborations
 	size_t collabs_count = collaborations.getSize();
@@ -526,7 +501,7 @@ void TaskManager::assignTaskInCollaboration(const MyString& collaboration_name, 
 		throw std::runtime_error("No user is currently logged in.");
 	}
 
-	CollaborationTask* new_task = new CollaborationTask(created_tasks++, task_name, task_final_date_str, task_description, getUser(assignee_name));
+	CollaborationTask* new_task = new CollaborationTask(created_tasks++, task_name, task_final_date_str, task_description, assignee_name);
 
 	size_t collaborations_count = collaborations.getSize();
 	for (size_t i = 0; i < collaborations_count; i++) {
@@ -537,7 +512,7 @@ void TaskManager::assignTaskInCollaboration(const MyString& collaboration_name, 
 				throw std::runtime_error("Assignee is not a part of the collaboration.");
 			}
 
-			tasks.pushBack(*new_task);
+			tasks.addTask(new_task);
 			collaborations[i].addTask(*new_task);
 			getUser(assignee_name).addTask(*new_task);
 			return;

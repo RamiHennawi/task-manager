@@ -1,12 +1,13 @@
 ﻿#pragma once
 #include "User.h"
 #include "Task.h"
+#include "TasksContainer.h"
 #include "CollaborationTask.h"
 #include "Collaboration.h"
 #include "Vector.hpp"
 
-// NOTE: each file has a "default/empty" state when there is no data (it contains '0' or '0 1' depending on the file
-// that is so, to indicate that there are 0 objects of the type or that the starting id is 1
+// NOTE: each file has a "default/empty" state when there is no data (it contains '0' or '1 0' depending on the file
+// that is so, to indicate that there that the starting id is 1 and there are 0 objects of the type
 constexpr const char* FILE_DB_USERS = "users.dat";
 constexpr const char* FILE_DB_TASKS = "tasks.dat";
 constexpr const char* FILE_DB_COLLABORATIONS = "collaborations.dat";
@@ -15,7 +16,7 @@ constexpr const char* FILE_DB_COLLABORATIONS = "collaborations.dat";
 class TaskManager {
 private:
 	Vector<User> users;
-	Vector<Task> tasks;
+	TasksContainer tasks;
 	Vector<Collaboration> collaborations;
 	User* logged_in_user = nullptr;
 

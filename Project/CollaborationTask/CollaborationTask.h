@@ -4,16 +4,17 @@
 
 class CollaborationTask : public Task {
 private:
-	User* assignee = nullptr;
+	MyString assignee;
 
 public:
 	CollaborationTask() = default;
-	CollaborationTask(uint32_t id, const MyString& name, const MyString& due_date_str, const MyString& description, User& assignee);
+	CollaborationTask(uint32_t id, const MyString& name, const MyString& due_date_str, const MyString& description, const MyString& assignee);
 
-	const User& getAssignee() const;
-	User& getAssignee();
+	const MyString& getAssignee() const;
 
 	void print() const override;
+
+	Task* clone() const override;
 	
 	// handle saving and reading from binary file
 	void saveToFile(std::ofstream& out) const override;
