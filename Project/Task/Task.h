@@ -16,8 +16,8 @@ namespace TaskHelperFunctions {
 
 class Task {
 protected:
-	uint32_t id; // to be handled by TaskManager (unique id = created tasks count)
-	TaskStatus status;
+	uint32_t id = 0; // to be handled by TaskManager (unique id = created tasks count)
+	TaskStatus status = TaskStatus::ON_HOLD;
 	time_t due_date;
 	MyString name;
 	MyString description;
@@ -36,12 +36,14 @@ public:
 
 	void updateName(const MyString& new_name);
 	void updateDescription(const MyString& new_description);
+	void updateStatus(TaskStatus new_status);
 
 	void start();
 	void finish();
 
 	virtual void print() const;
 
-	virtual void saveTask(std::ofstream& out) const;
-	virtual void readTask(std::ifstream& in);
+	// handle saving and reading from binary file
+	virtual void saveToFile(std::ofstream& out) const;
+	virtual void readFromFile(std::ifstream& in);
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 // code source: Georgi Terziev's GitHub
+
 template<typename T, typename D>
 class Pair {
 	T first;

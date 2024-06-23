@@ -19,26 +19,30 @@ public:
 	const MyString& getUsername() const;
 	const MyString& getPassword() const;
 
-	void saveToFile(std::ofstream& out) const;
-	void readFromFile(std::ifstream& in);
-
-	void addTask(Task& task);
+	const Task& getTask(const MyString& name) const;
+	const Task& getTask(uint32_t id) const;
 
 	void updateTaskName(uint32_t id, const MyString& new_name);
 	void updateTaskDescription(uint32_t id, const MyString& new_description);
+
+	void addTask(Task& task);
 
 	void startTask(uint32_t id);
 	void finishTask(uint32_t id);
 	void deleteTask(uint32_t id);
 
-	const Task& getTask(const MyString& name) const;
-	const Task& getTask(uint32_t id) const;
-
 	void listTasks(const MyString& final_date_str) const;
 	void listTasks() const;
 	void listCompletedTasks() const;
 
+	// handle dashboard through user
 	void removeTaskFromDashboard(uint32_t id);
 	void addTaskToDashboard(uint32_t id);
 	void listDashboard() const;
+
+	void syncTasks(); // go through tasks and look at their due dates
+
+	// handle saving and reading from binary file
+	void saveToFile(std::ofstream& out) const;
+	void readFromFile(std::ifstream& in);
 };

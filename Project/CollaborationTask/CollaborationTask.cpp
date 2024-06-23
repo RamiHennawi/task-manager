@@ -8,6 +8,10 @@ const User& CollaborationTask::getAssignee() const {
 	return *assignee;
 }
 
+User& CollaborationTask::getAssignee() {
+	return *assignee;
+}
+
 void CollaborationTask::print() const {
 	std::cout << "Task ID: " << id << std::endl;
 	std::cout << "Task name: " << name << std::endl;
@@ -17,7 +21,7 @@ void CollaborationTask::print() const {
 	std::cout << "Assignee: " << getAssignee().getUsername() << std::endl;
 }
 
-void CollaborationTask::saveTask(std::ofstream& out) const {
+void CollaborationTask::saveToFile(std::ofstream& out) const {
 	out.write(reinterpret_cast<const char*>(&id), sizeof(id));
 	out.write(reinterpret_cast<const char*>(&status), sizeof(status));
 	out.write(reinterpret_cast<const char*>(&due_date), sizeof(due_date));
@@ -27,7 +31,7 @@ void CollaborationTask::saveTask(std::ofstream& out) const {
 	assignee->saveToFile(out);
 }
 
-void CollaborationTask::readTask(std::ifstream& in) {
+void CollaborationTask::readFromFile(std::ifstream& in) {
 	in.read(reinterpret_cast<char*>(&id), sizeof(id));
 	in.read(reinterpret_cast<char*>(&status), sizeof(status));
 	in.read(reinterpret_cast<char*>(&due_date), sizeof(due_date));

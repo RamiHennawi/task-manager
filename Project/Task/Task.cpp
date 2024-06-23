@@ -60,6 +60,10 @@ void Task::updateDescription(const MyString& new_description) {
 	description = new_description;
 }
 
+void Task::updateStatus(TaskStatus new_status) {
+	status = new_status;
+}
+
 void Task::start() {
 	status = TaskStatus::IN_PROCESS;
 }
@@ -76,7 +80,7 @@ void Task::print() const {
 	std::cout << "Status: " << getStatusString() << std::endl;
 }
 
-void Task::saveTask(std::ofstream& out) const {
+void Task::saveToFile(std::ofstream& out) const {
 	out.write(reinterpret_cast<const char*>(&id), sizeof(id));
 	out.write(reinterpret_cast<const char*>(&status), sizeof(status));
 	out.write(reinterpret_cast<const char*>(&due_date), sizeof(due_date));
@@ -85,7 +89,7 @@ void Task::saveTask(std::ofstream& out) const {
 	description.saveToFile(out);
 }
 
-void Task::readTask(std::ifstream& in) {
+void Task::readFromFile(std::ifstream& in) {
 	in.read(reinterpret_cast<char*>(&id), sizeof(id));
 	in.read(reinterpret_cast<char*>(&status), sizeof(status));
 	in.read(reinterpret_cast<char*>(&due_date), sizeof(due_date));
@@ -93,4 +97,3 @@ void Task::readTask(std::ifstream& in) {
 	name.readFromFile(in);
 	description.readFromFile(in);
 }
-

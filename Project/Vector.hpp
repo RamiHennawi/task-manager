@@ -2,28 +2,25 @@
 #include <utility>
 #include <exception>
 
-// code source: Georgi Terziev's GitHub
+// main code source: Georgi Terziev's GitHub
 
-// NOTE!: most of the functions are not needed in the class
-// or do not work as in the original std::vector
-// They were created for testing purposes
 template<typename T>
 class Vector {
 private:
 	static const short INITIAL_CAPACITY = 4;
-	static const short RESIZE_COEF = 2; // the most optimal is between 1.4 and 1.5
+	static const short RESIZE_COEF = 2;
 
 	T* data = nullptr;
 	size_t size = 0;
 	size_t capacity;
-	// the resize function of the actual std::vector
-	// just lowers the size, this function is called reserve there
+
 	void resize(size_t newCapacity);
 
 	// Not needed functions - created by in class
 	void assertIndex(size_t index) const;
 	void upsizeIfNeeded();
 	void downsizeIfNeeded();
+
 public:
 	Vector();
 	Vector(size_t capacity);
@@ -192,6 +189,7 @@ T Vector<T>::popBack() {
 	if (empty()) {
 		throw std::exception("Vector is empty");
 	}
+
 	// Note: the actual std::vector does NOT lower its capacity on this function
 	//downsizeIfNeeded();
 	// Note: the actual std::vector does NOT return on popback
@@ -201,6 +199,7 @@ T Vector<T>::popBack() {
 template<typename T>
 T Vector<T>::popAt(size_t index) {
 	assertIndex(index);
+
 	// Note: the actual std::vector does NOT lower its capacity on this function
 	downsizeIfNeeded();
 

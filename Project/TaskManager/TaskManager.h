@@ -5,10 +5,13 @@
 #include "Collaboration.h"
 #include "Vector.hpp"
 
+// NOTE: each file has a "default/empty" state when there is no data (it contains '0' or '0 1' depending on the file
+// that is so, to indicate that there are 0 objects of the type or that the starting id is 1
 constexpr const char* FILE_DB_USERS = "users.dat";
 constexpr const char* FILE_DB_TASKS = "tasks.dat";
 constexpr const char* FILE_DB_COLLABORATIONS = "collaborations.dat";
 
+// TaskManager stores all users, tasks, collabs and manages all commands!
 class TaskManager {
 private:
 	Vector<User> users;
@@ -16,8 +19,8 @@ private:
 	Vector<Collaboration> collaborations;
 	User* logged_in_user = nullptr;
 
-	uint32_t created_tasks = 0;
-	uint32_t created_collabs = 0;
+	uint32_t created_tasks = 1; // to manage unique task id
+	uint32_t created_collabs = 1; // to manage unique collab id
 
 	Task& getTask(uint32_t id);
 	User& getUser(const MyString& username);
@@ -35,6 +38,7 @@ public:
 	TaskManager();
 	~TaskManager();
 
+	// handle user profiles
 	void registerUser(const MyString& username, const MyString& password);
 	void loginUser(const MyString& username, const MyString& password);
 	void logoutUser();

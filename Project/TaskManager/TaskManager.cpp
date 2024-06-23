@@ -39,7 +39,7 @@ void TaskManager::saveТasks() const {
 	out.write(reinterpret_cast<const char*>(&created_tasks), sizeof(created_tasks));
 
 	for (size_t i = 0; i < tasks_count; i++) {
-		tasks[i].saveTask(out);
+		tasks[i].saveToFile(out);
 	}
 
 	out.close();
@@ -60,10 +60,10 @@ void TaskManager::loadTasks() {
 	created_tasks = current_id;
 
 	for (size_t i = 0; i < tasks_count; i++) {
-		Task* task = new Task();
-		task->readTask(in);
+		Task* task = new Task();;
+		task->readFromFile(in);
 
-		tasks.pushBack(*task);
+		tasks.pushBack(*task); // add the task to the vector
 	}
 
 	in.close();
@@ -128,11 +128,12 @@ void TaskManager::loadUsers() {
 				loaded_user->addTaskToDashboard(loaded_id);
 			}
 			catch (...) {
-				std::cout << "Error occurred when loading task with ID " << loaded_id << "." << std::endl;
+				std::cout << "Error occurred when adding to dashboard task with ID " << loaded_id << "." << std::endl;
 			}
 		}
 
-		users.pushBack(*loaded_user);
+		loaded_user->syncTasks(); // sync the tasks with the current time
+		users.pushBack(*loaded_user); // add the user to the vector
 	}
 
 	in.close();
@@ -152,7 +153,7 @@ void TaskManager::saveCollaborations() const {
 	out.write(reinterpret_cast<const char*>(&created_collabs), sizeof(created_collabs));
 
 	for (size_t i = 0; i < collabs_count; i++) {
-		collaborations[i].saveCollaboration(out);
+		collaborations[i].saveToFile(out);
 	}
 
 	out.close();
@@ -174,7 +175,7 @@ void TaskManager::loadCollaborations() {
 
 	for (size_t i = 0; i < collabs_count; i++) {
 		Collaboration* collab = new Collaboration();
-		collab->readCollaboration(in);
+		collab->readFromFile(in);
 
 		// load users in collaboration
 		size_t collab_users_count;
@@ -208,24 +209,58 @@ void TaskManager::loadCollaborations() {
 			}
 		}
 
-		collaborations.pushBack(*collab);
+		collaborations.pushBack(*collab); // add the collaboration to the vector
 	}
 
 	in.close();
 }
 
 TaskManager::TaskManager() {
-	loadTasks();
-	loadUsers();
-	loadCollaborations();
-	// try catch!
+	// load all resources when starting (creating task-manager)
+	try {
+		loadTasks();
+	} 
+	catch (const std::exception& exc) {
+		std::cout << "Error with loading tasks: " << exc.what() << std::endl;
+	}
+
+	try {
+		loadUsers();
+	}
+	catch (const std::exception& exc) {
+		std::cout << "Error with loading users: " << exc.what() << std::endl;
+	}
+
+	try {
+		loadCollaborations();
+	}
+	catch (const std::exception& exc) {
+		std::cout << "Error with loading collaborations: " << exc.what() << std::endl;
+	}
 }
 
 TaskManager::~TaskManager() {
-	saveТasks();
-	saveUsers();
-	saveCollaborations();
-	// try catch!
+	// save all resources when exiting (deleting task-manager)
+	try {
+		saveТasks();
+	}
+	catch (const std::exception& exc) {
+		std::cout << "Error with saving tasks: " << exc.what() << std::endl;
+	}
+
+	try {
+		saveUsers();
+	}
+	catch (const std::exception& exc) {
+		std::cout << "Error with saving users: " << exc.what() << std::endl;
+	}
+
+	try {
+		saveCollaborations();
+	}
+	catch (const std::exception& exc) {
+		std::cout << "Error with saving collaborations: " << exc.what() << std::endl;
+	}
 }
 
 void TaskManager::registerUser(const MyString& username, const MyString& password) {
@@ -257,10 +292,10 @@ void TaskManager::loginUser(const MyString& username, const MyString& password) 
 void TaskManager::logoutUser() {
 	if (logged_in_user) {
 		logged_in_user = nullptr;
+		return; 
 	}
-	else {
-		throw std::runtime_error("No user is currently logged in.");
-	}
+	
+	throw std::runtime_error("No user is currently logged in.");
 }
 
 void TaskManager::addTask(const MyString& name, const MyString& due_date_str, const MyString& description) {
@@ -444,7 +479,7 @@ void TaskManager::listCollaborations() const {
 			std::cout << collaborations[i].getName();
 
 			if (i != (collaborations_count - 1)) {
-				std::cout << ", ";
+				std::cout << "; ";
 			}
 		}
 	}
@@ -458,6 +493,7 @@ void TaskManager::listTasksInCollaboration(const MyString& name) const {
 	}
 
 	size_t collaborations_count = collaborations.getSize();
+
 	for (size_t i = 0; i < collaborations_count; i++) {
 		if (collaborations[i].getName() == name) {
 			collaborations[i].listTasks();
@@ -492,13 +528,18 @@ void TaskManager::assignTaskInCollaboration(const MyString& collaboration_name, 
 
 	CollaborationTask* new_task = new CollaborationTask(created_tasks++, task_name, task_final_date_str, task_description, getUser(assignee_name));
 
-	// TODO: check if assignee exists??
-
 	size_t collaborations_count = collaborations.getSize();
 	for (size_t i = 0; i < collaborations_count; i++) {
 		// find collaboration
 		if (collaborations[i].getName() == collaboration_name) {
+			// check if assignee is in the collaboration
+			if (!collaborations[i].includesUser(assignee_name)) {
+				throw std::runtime_error("Assignee is not a part of the collaboration.");
+			}
+
+			tasks.pushBack(*new_task);
 			collaborations[i].addTask(*new_task);
+			getUser(assignee_name).addTask(*new_task);
 			return;
 		}
 	}

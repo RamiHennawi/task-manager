@@ -2,7 +2,8 @@
 #include <iostream>
 #include <fstream>
 
-// source: Georgi Terziev's GitHub
+// main code source: Georgi Terziev's GitHub
+
 namespace StringHelperFunctions {
     unsigned int getNextPowerOfTwo(unsigned int n);
 }
@@ -16,6 +17,7 @@ private:
     void resize(size_t lengthToFit);
 
     explicit MyString(size_t capacity);
+
 public:
     MyString();
     MyString(const char* str);
@@ -41,6 +43,7 @@ public:
     friend MyString operator+(const MyString& lhs, const MyString& rhs);
     friend std::istream& operator>>(std::istream& is, MyString& str);
 
+    // this is not in the standard - we use it to store and read strings from binary files
     void saveToFile(std::ofstream& out) const;
     void readFromFile(std::ifstream& in);
 

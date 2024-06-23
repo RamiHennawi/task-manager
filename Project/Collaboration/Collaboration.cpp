@@ -7,34 +7,39 @@ void Collaboration::addUser(User& new_user) {
 
 	for (size_t i = 0; i < usersCount; i++) {
 		if (users[i] == &new_user) {
-			throw std::runtime_error("User already in collaboration");
+			throw std::runtime_error("User already in collaboration.");
 		}
 	}
 
 	users.pushBack(&new_user);
 }
 
-void Collaboration::assignTask(CollaborationTask& task) {
-	if (includesUser(task.getAssignee())) {
-		tasks.pushBack(&task);
+void Collaboration::addTask(Task& task) {
+	if (includesTask(task.getID())) {
+		throw std::runtime_error("Task already in collaboration.");
 	}
-	else {
-		throw std::runtime_error("User is not in the collaboration.");
-	}
+
+	tasks.pushBack(&task);
 }
 
 void Collaboration::listTasks() const {
-	size_t tasksCount = tasks.getSize();
+	size_t tasks_count = tasks.getSize();
 
-	if (tasksCount == 0) {
-		std::cout << "There are no tasks.";
+	if (tasks_count == 0) {
+		throw std::runtime_error("Collaborations is empty.");
 	}
 
-	for (size_t i = 0; i < tasksCount; i++) {
+	std::cout << "Tasks for " << name << ": " << std::endl;
+
+	for (size_t i = 0; i < tasks_count; i++) {
 		tasks[i]->print();
-		std::cout << "Assignee: " << tasks[i]->getAssignee().getUsername() << std::endl;
-		std::cout << "-----------------" << std::endl;
+
+		if (i != (tasks_count - 1)) {
+			std::cout << "-----------------" << std::endl;
+		}
 	}
+
+	std::cout << std::endl;
 }
 
 const MyString& Collaboration::getName() const {
@@ -49,8 +54,8 @@ size_t Collaboration::getTasksCount() const {
 	return tasks.getSize();
 }
 
-const CollaborationTask& Collaboration::getTaskAtIndex(size_t index) const {
-	return *tasks[index];
+uint32_t Collaboration::getTaskIDAtIndex(size_t index) {
+	return tasks[index]->getID();
 }
 
 void Collaboration::removeTask(uint32_t id) {
@@ -92,4 +97,46 @@ bool Collaboration::includesUser(const User& user) const {
 	}
 
 	return false;
+}
+
+bool Collaboration::includesTask(uint32_t id) const {
+	size_t tasks_count = tasks.getSize();
+
+	for (size_t i = 0; i < tasks_count; i++) {
+		if (tasks[i]->getID() == id) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void Collaboration::saveToFile(std::ofstream& out) const {
+	out.write(reinterpret_cast<const char*>(&id), sizeof(id));
+
+	name.saveToFile(out);
+	creator.saveToFile(out);
+
+	size_t users_count = users.getSize();
+	out.write(reinterpret_cast<const char*>(&users_count), sizeof(users_count));
+
+	for (size_t i = 0; i < users_count; i++) {
+		MyString user_name = users[i]->getUsername();
+		user_name.saveToFile(out);
+	}
+
+	size_t tasks_count = tasks.getSize();
+	out.write(reinterpret_cast<const char*>(&tasks_count), sizeof(tasks_count));
+
+	for (size_t i = 0; i < tasks_count; i++) {
+		uint32_t task_id = tasks[i]->getID();
+		out.write(reinterpret_cast<const char*>(&task_id), sizeof(task_id));
+	}
+}
+
+void Collaboration::readFromFile(std::ifstream& in) {
+	in.read(reinterpret_cast<char*>(&id), sizeof(id));
+
+	name.readFromFile(in);
+	creator.readFromFile(in);
 }

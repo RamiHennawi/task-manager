@@ -12,20 +12,6 @@ bool Dashboard::containsTask(Task& task) const {
 	return false;
 }
 
-void Dashboard::saveToFile(std::ofstream& out) const {
-	size_t tasks_count = tasks.getSize();
-	out.write(reinterpret_cast<const char*>(&tasks_count), sizeof(tasks_count));
-
-	for (size_t i = 0; i < tasks_count; i++) {
-		uint32_t task_id = tasks[i]->getID();
-		out.write(reinterpret_cast<const char*>(&task_id), sizeof(task_id));
-	}
-}
-
-void Dashboard::readFromFile(std::ifstream& in) {
-	
-}
-
 void Dashboard::addTask(Task& task) {
 	if (task.getStatus() != TaskStatus::OVERDUE) {
 		if (containsTask(task)) {
@@ -33,10 +19,10 @@ void Dashboard::addTask(Task& task) {
 		}
 
 		tasks.pushBack(&task);
+		return;
 	}
-	else {
-		throw std::logic_error("Cannot add an overdue task to the dashboard.");
-	}
+	
+	throw std::logic_error("Cannot add an overdue task to the dashboard.");
 }
 
 void Dashboard::removeTask(Task& task) {
@@ -59,7 +45,7 @@ void Dashboard::listTasks() const {
 		throw std::runtime_error("Dashboard is empty.");
 	}
 
-	std::cout << "Dashboard:\n";
+	std::cout << "Dashboard: \n";
 
 	for (size_t i = 0; i < tasks_count; i++) {
 		tasks[i]->print();
@@ -70,4 +56,15 @@ void Dashboard::listTasks() const {
 	}
 
 	std::cout << std::endl;
+}
+
+void Dashboard::saveToFile(std::ofstream& out) const {
+	size_t tasks_count = tasks.getSize();
+	out.write(reinterpret_cast<const char*>(&tasks_count), sizeof(tasks_count));
+
+	// save the ids of the tasks in dashboard
+	for (size_t i = 0; i < tasks_count; i++) {
+		uint32_t task_id = tasks[i]->getID();
+		out.write(reinterpret_cast<const char*>(&task_id), sizeof(task_id));
+	}
 }
